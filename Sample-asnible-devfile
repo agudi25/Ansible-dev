@@ -1,0 +1,52 @@
+apiVersion: 1.0.0
+metadata:
+  name: ansible-29
+attributes:
+  extensions.ignoreRecommendations: 'true'
+components:
+  - mountSources: true
+    memoryLimit: 512Mi
+    type: dockerimage
+    volumes:
+      - name: venv
+        containerPath: /home/user/.venv
+      - name: ansible
+        containerPath: /home/user/.ansible
+    alias: ansible
+    image: quay.io/pgustafs/sidecar-python38-ansible-rhel8
+    env:
+      - value: /home/user/.ansible/ansible.cfg
+        name: ANSIBLE_CONFIG
+      - value: 'true'
+        name: GIT_SSL_NO_VERIFY
+  - preferences:
+      python.globalModuleInstallation: true
+      ansible.ansible.useFullyQualifiedCollectionNames: true
+    type: chePlugin
+    reference: 'https://codeshare.io/4epODb'
+    alias: redhat-ansible-extension-
+commands:
+  - name: 1. Open terminal - VirtualEnv
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}'
+        type: exec
+        command: 'TMPFILE=$(mktemp); echo "source ${HOME}/.venv/bin/activate" > $TMPFILE; bash --rcfile $TMPFILE'
+        component: ansible
+  - name: 2. Install PIP package
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}'
+        type: exec
+        command: 'read -e -p "Enter package name: " NAME; source ${HOME}/.venv/bin/activate; pip install $NAME && exit'
+        component: ansible
+  - name: 3. Push to repo
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}'
+        type: exec
+        command: 'read -e -p "Enter commit message: " MESSAGE; git add --all; git commit -m $MESSAGE; git push && exit'
+        component: ansible
+  - name: A. Configure GIT user
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}'
+        type: exec
+        command: 'read -e -p "Enter Git Username: " GITNAME; read -e -p "Enter Git Email: " GITEMAIL; git config --global user.name $GITNAME ; git config --global user.email $GITEMAIL ; git config --global credential.helper store && exit'
+        component: ansible
