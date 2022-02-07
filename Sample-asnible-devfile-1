@@ -26,4 +26,3 @@ spec:
         value: '/home/user/.ansible/ansible.cfg'
   extensions:
   - 'https://github.com/microsoft/vscode-python/releases/download/2020.7.94776/ms-python-release.vsix'
-  - 'https://open-vsx.org/api/redhat/vscode-yaml/0.14.0/file/redhat.vscode-yaml-0.14.0.vsix'
